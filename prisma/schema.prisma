@@ -73,10 +73,11 @@ model Message {
   sender       User         @relation(fields: [userId], references: [id])
   conversation Conversation @relation(fields: [conversationId], references: [id])
   content      String       @db.Text
+  timestamp    DateTime     @default(now())
 
   userId         String
   conversationId String
-
+  @@index([timestamp])
   @@index([userId])
   @@index([conversationId])
 }

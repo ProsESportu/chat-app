@@ -8,4 +8,12 @@ export const handle = SvelteKitAuth({
   adapter: PrismaAdapter(prisma),
   providers: [GitHub({ clientId: GITHUB_ID, clientSecret: GITHUB_SECRET })],
   secret: AUTH_SECRET,
+  callbacks: {
+    session: (e) => {
+      if(e.session.user){
+      e.session.user.id = e.user.id
+      }
+      return e.session
+    }
+  }
 });
