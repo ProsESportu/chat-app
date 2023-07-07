@@ -5,7 +5,6 @@
         Listgroup,
         ListgroupItem,
         Search,
-        Chevron,
         Button,
     } from "flowbite-svelte";
     import { SearchSolid } from "flowbite-svelte-icons";
@@ -13,7 +12,7 @@
     export let data: LayoutServerData;
 </script>
 
-<div class="flex">
+<div class="flex h-5/6">
     <Listgroup active class="w-1/3 ml-2"
         ><form class="flex m-1">
             <Search class="py-3" />
