@@ -1,6 +1,6 @@
 import { prisma } from '$lib/prisma.server';
 import type { SessionWithId } from '$lib/types';
-import type { LayoutServerLoad } from './$types';
+import type { LayoutServerLoad, } from './$types';
 import { redirect } from "@sveltejs/kit";
 export const load = (async (e) => {
     const session = await e.locals.getSession() as SessionWithId;

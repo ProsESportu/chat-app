@@ -22,18 +22,6 @@
         GithubSolid,
     } from "flowbite-svelte-icons";
     import logo from "$lib/images/svelte-logo.svg";
-    import * as Pusher from "@pusher/push-notifications-web";
-    import { onMount } from "svelte";
-    onMount(() => {
-        const client = new Pusher.Client({
-            instanceId: "bc276006-a327-4560-bdf9-edfb6569f5df",
-        });
-        client
-            .start()
-            .then(() => client.addDeviceInterest("hello"))
-            .then(() => console.log("Successfully registered and subscribed!"))
-            .catch(console.error);
-    });
 </script>
 
 <div class="h-screen">
