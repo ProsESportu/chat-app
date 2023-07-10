@@ -27,7 +27,6 @@ export const load = (async (e) => {
                 include: { users: true }
             }
         },
-        orderBy:{timestamp:"desc"}
     })
     return { messages, conv: await e.parent() };
 }) satisfies PageServerLoad;
