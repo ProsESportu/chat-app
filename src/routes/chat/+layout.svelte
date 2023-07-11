@@ -24,7 +24,7 @@
         const res: Ires = await fetch("/chat", {
             body: e,
             method: "POST",
-        }).then((e) => e.json());
+        }).then((f) => f.json());
         data.convs?.conversations.push({
             id: res.id,
             users: res.users,

@@ -9,15 +9,12 @@
     import { onMount, onDestroy } from "svelte";
     export let data: PageServerData;
     let main: HTMLElement;
-    import * as Pusher from "@pusher/push-notifications-web";
     import Channel, * as Channels from "pusher-js";
     import {
-        PUBLIC_PUSHER_INSTANCE_ID,
         PUBLIC_PUSHER_APP_KEY,
         PUBLIC_PUSHER_CLUSTER,
     } from "$env/static/public";
     import { browser } from "$app/environment";
-    let client: Pusher.Client;
     let channel: Channels.Channel;
     let pusher: Channel;
     onMount(() => {
@@ -27,31 +24,23 @@
         });
         channel = pusher.subscribe($page.params.cuid);
         channel.bind("message", (e: Message) => {
-            data.messages.push({
-                content: e.content,
-                timestamp: new Date(e.timestamp),
-                userId: e.userId,
-                sender: {
-                    image: e.sender.image || null,
-                    name: e.sender.name || null,
-                },
-            });
-            data.messages = data.messages;
-            setTimeout(scrollBottom, 100);
+            if (e.userId !== $page.data.session?.user?.id) {
+                data.messages.push({
+                    id: Math.random(),
+                    content: e.content,
+                    timestamp: new Date(e.timestamp),
+                    userId: e.userId,
+                    conversationId: $page.params.cuid,
+                    sender: {
+                        id: e.userId,
+                        image: e.sender.image || null,
+                        name: e.sender.name || null,
+                    },
+                });
+                data.messages = data.messages;
+                setTimeout(scrollBottom, 50);
+            }
         });
-        client = new Pusher.Client({
-            instanceId: PUBLIC_PUSHER_INSTANCE_ID,
-        });
-        const beamsToken = new Pusher.TokenProvider({
-            url: "/push",
-        });
-        client
-            .start()
-            .then(() =>
-                client.setUserId($page.data.session?.user?.id, beamsToken)
-            )
-            .then(() => console.log("Successfully registered and subscribed!"))
-            .catch(console.log);
     });
     if (browser) {
         onDestroy(() => {
@@ -65,11 +54,7 @@
 </script>
 
 <svelte:head>
-    <title
-        >{data.conv.convs.conversations
-            .find((e) => e.id === $page.params.cuid)
-            ?.users.reduce((r, e) => r + e.name + ",", "") || "?"}</title
-    >
+    <title>{data.title}</title>
 </svelte:head>
 <main class="w-full overflow-y-scroll" bind:this={main}>
     {#each data.messages as message (message.timestamp)}
@@ -86,15 +71,15 @@
         method="post"
         use:enhance={(e) => {
             const message = e.formData.get("message");
-            console.log(message)
             if (typeof message === "string" && $page.data.session?.user) {
                 data.messages.push({
+                    id: Math.random(),
                     content: message,
                     timestamp: new Date(),
                     conversationId: $page.params.cuid,
                     userId: $page.data.session.user.id,
                     sender: {
-                        email: $page.data.session.user.email || null,
+                        id: $page.data.session.user.id,
                         name: $page.data.session.user.name || null,
                         image: $page.data.session.user.image || null,
                     },
@@ -112,7 +97,7 @@
             required
         />
         <Button type="submit" class="my-2"
-            ><PapperPlaneSolid  class="rotate-45" /></Button
+            ><PapperPlaneSolid class="rotate-45" /></Button
         >
     </form>
 </main>

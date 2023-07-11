@@ -12,7 +12,8 @@ export const load = (async (e) => {
             conversations: {
                 include: {
                     users: {
-                        where: { id: { not: session.user.id } }
+                        where: { id: { not: session.user.id } },
+                        select: { image: true, name: true }
                     }
                 },
             }

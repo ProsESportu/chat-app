@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { prisma } from '$lib/prisma.server';
 import type { SessionWithId, Message } from '$lib/types';
-import { serverClient, client } from '$lib/pusher.server';
+import { client } from '$lib/pusher.server';
 
 export const load = (async (e) => {
     const session = await e.locals.getSession() as SessionWithId
@@ -12,7 +12,7 @@ export const load = (async (e) => {
     }
     const authorized = await prisma.conversation.findUniqueOrThrow({
         where: { id: e.params.cuid },
-        include: { users: true }
+        include: { users: { select: { id: true } } }
     })
     if (!(authorized.users.map(user => user.id).includes(session.user.id))) {
         throw redirect(303, "/")
@@ -22,13 +22,24 @@ export const load = (async (e) => {
             conversationId: e.params.cuid
         },
         include: {
-            sender: true,
-            conversation: {
-                include: { users: true }
-            }
+            sender: {
+                select: {
+                    name: true, image: true, id: true,
+                }
+            },
         },
     })
-    return { messages, conv: await e.parent() };
+    const title = (await prisma.conversation.findUniqueOrThrow({
+        where: { id: e.params.cuid },
+        include: {
+            users: {
+                where: { id: { not: session.user.id } },
+                select: { name: true }
+            }
+        }
+
+    })).users.reduce((r, e) => r + e.name + ",", "")
+    return { messages, title };
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -36,16 +47,6 @@ export const actions = {
         const message = (await e.request.formData()).get("message")
         const session = await e.locals.getSession() as SessionWithId
         if (session?.user && typeof message === "string") {
-            const users = await prisma.conversation.findUniqueOrThrow({
-                where: { id: e.params.cuid },
-                include: {
-                    users: {
-                        where: {
-                            id: { not: session.user.id }
-                        }
-                    }
-                }
-            })
             const push: Message = {
                 content: message,
                 timestamp: new Date().getTime(),
@@ -56,15 +57,6 @@ export const actions = {
                 }
             }
             await client.trigger(e.params.cuid, "message", push)
-            await serverClient.publishToUsers(users.users.map(user => user.id), {
-                web: {
-                    notification: {
-                        deep_link: e.url.toString(),
-                        title: session.user.name || undefined,
-                        body: message
-                    }
-                }
-            })
             await prisma.message.create({
                 data: {
                     content: message,

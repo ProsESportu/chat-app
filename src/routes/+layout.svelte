@@ -20,6 +20,7 @@
         AngleDownSolid,
         UserSettingsSolid,
         GithubSolid,
+        GoogleSolid,
     } from "flowbite-svelte-icons";
     import logo from "$lib/images/svelte-logo.svg";
 </script>
@@ -63,9 +64,10 @@
                     <DropdownItem on:click={signOut}>Sign out</DropdownItem>
                 </Dropdown>
             {:else}
-                <Button on:click={() => signIn("github")}
+                <Button on:click={() => signIn()}
                     ><GithubSolid />
-                    <p class="px-1">Sign in with Github</p></Button
+                    <GoogleSolid />
+                    <p class="px-1">Sign in</p></Button
                 >
             {/if}
         </div>

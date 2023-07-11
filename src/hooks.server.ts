@@ -10,11 +10,11 @@ export const handle = SvelteKitAuth({
   providers: [GitHub({ clientId: GITHUB_ID, clientSecret: GITHUB_SECRET })],
   secret: AUTH_SECRET,
   callbacks: {
-    session: (e) => {
+    session: (e): SessionWithId => {
       if (e.session.user) {
         e.session.user.id = e.user.id
       }
-      return e.session as SessionWithId
+      return e.session as SessionWithId;
     }
   }
 });
